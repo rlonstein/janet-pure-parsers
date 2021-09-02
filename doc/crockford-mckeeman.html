@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="author" content="Douglas Crockford" />
+<meta name="copyright" content="(C)2021 Douglas Crockford" />
+<meta name="date" content="2021" />
+<meta http-equiv="Expires" content="1968-12-09" />
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<link rel="stylesheet" href="https://www.crockford.com/crockford.css" type="text/css">
+<link rel="icon" type="image/png" href="https://www.crockford.com/favicon.png">
+<title>McKeeman Form</title>
+</head>
+<body>
+<div id="side">
+    <div id="name"><a href="https://www.crockford.com"><big>Douglas Crockford</big></a></div><br>
+    <p><a href="https://www.crockford.com/blog.html">Blog</a></p>
+    <p><a href="https://www.crockford.com/books.html">Books</a></p>
+    <p><a href="https://www.crockford.com/videos.html">Videos</a></p>
+    <p><a href="https://www.crockford.com/2021.html">2021 Appearances</a></p>
+    <p><a href="https://www.crockford.com/javascript/">JavaScript</a></p>
+    <p><a href="https://jslint.com">JSLint</a></p>
+    <p><a href="https://json.org">JSON</a></p>
+    <p><a href="https://github.com/douglascrockford">Github</a></p>
+    <p><a href="https://howjavascriptworks.com/"><i>How JavaScript Works</i></a></p>
+    <p><a href="https://layer8.space/@douglascrockford">Layer8</a></p>
+    <p><a href="https://www.crockford.com/about.html">About</a></p>
+</div>
+<div id="blog">
+<time>2020-01-09</time>
+<h1>McKeeman Form</h1>
+
+<blockquote><i>This is an excerpt from Chapter 22 of <a href="https://howjavascriptworks.com">How JavaScript Works</a>.</i></blockquote>
+<p>McKeeman Form is a notation for expressing grammars. It was proposed by <a href="http://www.cs.dartmouth.edu/~mckeeman/">Bill McKeeman</a> of Dartmouth College. It is a simplified Backus-Naur Form with significant whitespace and minimal use of metacharacters.</p>
+<h2>Grammar</h2>
+<p>We can express the grammar of McKeeman Form in McKeeman Form.</p>
+<p>A <dfn>grammar</dfn> is a list of one or more rules.</p>
+<p class="rule">grammar
+    rules
+</p>
+<p>The Unicode code point <code>U+0020</code> is used as the <dfn>space</dfn>.
+The Unicode code point <code>U+000A</code> is used as the <dfn>newline</dfn>.</p>
+<p class="rule">space
+    <code>'0020'</code>
+</p>
+<p class="rule">newline
+    <code>'000A'</code>
+</p>
+<p>A <dfn>name</dfn> is a sequence of letters or <code>_</code><small>underbar</small>.</p>
+<p class="rule">name
+    letter
+    letter name
+</p>
+<p class="rule">letter
+    <code>'a'</code> <code>.</code> <code>'z'</code>
+    <code>'A'</code> <code>.</code> <code>'Z'</code>
+    <code>'_'</code>
+</p>
+<p>An <dfn>indentation</dfn> is four spaces.</p>
+<p class="rule">indentation
+    space space space space
+</p>
+<p>Each of the <dfn>rules</dfn> is separated by a <dfn>newline</dfn>. A <dfn>rule</dfn> has a <dfn>name</dfn> on one line, with <dfn>alternatives</dfn> indented below it.</p>
+<p class="rule">rules
+    rule
+    rule newline rules
+</p>
+<p class="rule">rule
+    name newline nothing alternatives
+</p>
+<p>If the first line after the <dfn>name</dfn> of a <dfn>rule</dfn> is <code>""</code>, then the <dfn>rule</dfn> may match <dfn>nothing</dfn>.</p>
+<p class="rule">nothing
+    <code>""</code>
+    indentation <code>'"'</code> <code>'"'</code> newline
+</p>
+<p>Each <dfn>alternative</dfn> is indented on its own line. Each <dfn>alternative</dfn> contains <dfn>items</dfn> followed by a <dfn>newline</dfn>.</p>
+<p class="rule">alternatives
+    alternative
+    alternative alternatives
+</p>
+<p class="rule">alternative
+    indentation items newline
+</p>
+<p>The <dfn>items</dfn> are separated by spaces. An <dfn>item</dfn> is a <dfn>literal</dfn> or the <dfn>name</dfn> of a <dfn>rule</dfn>.</p>
+<p class="rule">items
+    item
+    item space items
+</p>
+<p class="rule">item
+    literal
+    name
+</p>
+<p class="rule">literal
+    singleton
+    range exclude
+    <code>'"'</code> characters <code>'"'</code>
+</p>
+<p>Any single Unicode code point except the 32 control codes may be placed within the single quotes. The <dfn>hexcode</dfn> of any Unicode code point may also be placed within the single quotes. A <dfn>hexcode</dfn> can contain 4, 5, or 6 hexadecimal digits.</p>
+<p class="rule">singleton
+    <code>'''</code> codepoint <code>'''</code>
+</p>
+<p class="rule">codepoint
+    <code>' '</code> <code>.</code> <code>'10FFFF'</code>
+    hexcode
+</p>
+<p class="rule">hexcode
+    <code>"10"</code> hex hex hex hex
+    hex hex hex hex hex
+    hex hex hex hex
+</p>
+<p class="rule">hex
+    <code>'0'</code> <code>.</code> <code>'9'</code>
+    <code>'A'</code> <code>.</code> <code>'F'</code>
+</p>
+<p>A <dfn>range</dfn> is specified as a <dfn>singleton</dfn>, a <code>.</code><small>period</small>, and another <dfn>singleton</dfn>. Literal ranges can optionally be followed by <code>-</code><small>minus sign</small> and characters to be excluded.</p>
+<p class="rule">range
+    singleton space <code>'.'</code> space singleton
+</p>
+<p class="rule">exclude
+    <code>""</code>
+    space <code>'-'</code> space singleton exclude
+    space <code>'-'</code> space range exclude
+</p>
+<p>A <dfn>character</dfn> wrapped in <code>"</code><small>double quote</small> can be any of the Unicode code points except the 32 control codes and <code>"</code><small>double quote</small>. The definition of <dfn>character</dfn> shows an example of a codepoint range and exclude.</p>
+<p class="rule">characters
+    character
+    character characters
+</p>
+<p class="rule">character
+    <code>' '</code> <code>.</code> <code>'10FFFF'</code> <code>-</code> <code>'"'</code>
+</p>
+<h2>JSON</h2>
+<p>This is the <a href="https://www.JSON.org/">JSON</a> grammar in McKeeman Form.</p>
+<p class="rule">json
+   element
+</p>
+<p class="rule">value
+   object
+   array
+   string
+   number
+   <code>"true"</code>
+   <code>"false"</code>
+   <code>"null"</code>
+</p>
+<p class="rule">object
+    <code>'{'</code> ws <code>'}'</code>
+    <code>'{'</code> members <code>'}'</code>
+</p>
+<p class="rule">members
+    member
+    member <code>','</code> members
+</p>
+<p class="rule">member
+    ws string ws <code>':'</code> element
+</p>
+<p class="rule">array
+    <code>'['</code> ws <code>']'</code>
+    <code>'['</code> elements <code>']'</code>
+</p>
+<p class="rule">elements
+    element
+    element <code>','</code> elements
+</p>
+<p class="rule">element
+    ws value ws
+</p>
+<p class="rule">string
+<code>'"'</code> characters <code>'"'</code></p>
+<p class="rule">characters
+    <code>""</code>
+    character characters</p>
+<p class="rule">character
+    <code>'0020'</code> <code>.</code> <code>'10FFFF'</code> <code>-</code> <code>'"'</code> <code>-</code> <code>'\'</code>
+<code>'\'</code> escape</p>
+<p class="rule">escape
+    <code>'"'</code>
+    <code>'\'</code>
+    <code>'/'</code>
+    <code>'b'</code>
+    <code>'f'</code>
+    <code>'n'</code>
+    <code>'r'</code>
+    <code>'t'</code>
+    <code>'u'</code> hex hex hex hex
+</p>
+<p class="rule">hex
+    digit
+    <code>'A'</code> <code>.</code> <code>'F'</code>
+    <code>'a'</code> <code>.</code> <code>'f'</code>
+</p>
+<p class="rule">number
+    integer fraction exponent
+</p>
+<p class="rule">integer
+    digit
+    onenine digits
+    <code>'-'</code> digit
+    <code>'-'</code> onenine digits
+</p>
+<p class="rule">digits
+    digit
+    digit digits
+</p>
+<p class="rule">digit
+    <code>'0'</code>
+    onenine
+</p>
+<p class="rule">onenine
+    <code>'1'</code> <code>.</code> <code>'9'</code>
+</p>
+<p class="rule">fraction
+    <code>""</code>
+    <code>'.'</code> digits
+</p>
+<p class="rule">exponent
+    <code>""</code>
+    <code>'E'</code> sign digits
+    <code>'e'</code> sign digits
+</p>
+<p class="rule">sign
+    <code>""</code>
+    <code>'+'</code>
+    <code>'-'</code>
+</p>
+<p class="rule">ws
+    <code>""</code>
+    <code>'0020'</code> ws
+    <code>'000A'</code> ws
+    <code>'000D'</code> ws
+    <code>'0009'</code> ws
+</p>
+
+</div>
+</body>
+</html>
+
