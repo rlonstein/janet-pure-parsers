@@ -24,18 +24,12 @@
     (++ idx))
   accum)
 
-# FIXME only used for tracing
 (defn- mk-string [str]
   str)
 
 (def json-grammar
   `PEG for converting a string containing JSON into a Janet datastructure.
-   Relies on private helper functions for the conversions.
-
-   TODO: Unicode support
-
-   TODO: Tests
-`
+   Relies on private helper functions for the conversions.`
   (peg/compile
    ~{:json (sequence :ws* :value :ws*)
      :value (choice
@@ -46,8 +40,8 @@
                (/ (sequence :ws* (<- :boolean) :ws*) ,mk-boolean)
                (/ (sequence :ws* :null :ws*) :null))
 
-     :object (sequence :begin-object :members :end-object)
-     :array (sequence :begin-array :elements :end-array)
+     :object (sequence :begin-object (any :members) :end-object)
+     :array (sequence :begin-array (any :elements) :end-array)
 
      :member (sequence :ws* (/ :string ,mk-keyword) :name-separator :element)
      :members (sequence :member (any (sequence :value-separator :member)))
@@ -57,12 +51,9 @@
      :string (sequence
                 :ws*
                 :double-quote
-                # FIXME- :w doesn't capture all printables & these ranges don't work as expected
-                (<- (any (choice :w* (any :ascii-printable) (any :ascii-extended))))
+                (<- (any (choice (sequence :backslash :escaped) :ascii-printable :ascii-extended :space)))
                 :double-quote
                 :ws*)
-     :ascii-printable (range "\x20\x7E")
-     :ascii-extended (range "\xA0\xFF")
 
      :number (sequence :ws* :integer :fraction :exponent :ws*)
      :integer (choice
@@ -82,7 +73,7 @@
      :end-object (sequence :ws* "}" :ws*)
      :name-separator (sequence :ws* ":" :ws*)
      :value-separator (sequence :ws* "," :ws*)
-     
+
      :space "\x20"
      :htab "\x09"
      :nl "\x0A"
@@ -93,9 +84,12 @@
      :double-quote "\""
      :backslash "\\"
      :slash "/"
-     :escaped (choice :double-quote :backslash :slash "b" "f" "n" "r" "t" (sequence "u" (repeat 4 :h)))
+     :escaped (choice :double-quote :backslash :slash (set  "bfnrt") (sequence "u" (repeat 4 :h)))
 
-     :boolean (choice :true :false)     
+     :ascii-printable (range "\x20\x21" "\x23\x7E")   # no double-quote
+     :ascii-extended (range "\xA0\xFF")
+
+     :boolean (choice :true :false)
      :true "true"
      :false "false"
      :null "null"
