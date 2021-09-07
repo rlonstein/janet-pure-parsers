@@ -17,7 +17,7 @@
     :escaped-chars (sequence :escape (choice :field-separator :double-quote))
    })
 
-(defn csv-iter
+(defn iter
   `Create a fiber that iterates over the supplied open file handle
 parsing the lines as CSV records.
 
@@ -31,7 +31,7 @@ Optionally specify the field separator pattern (default \",\").`
                (loop [line :iterate (file/read filehandle :line)]
                  (yield (first (peg/match parser line)))))))
 
-(defn parse-csv
+(defn parse
   `Parse the contents of the specified filename into an array of records.
 
 Specify the field separator with :separator (default \",\").
