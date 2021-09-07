@@ -55,17 +55,12 @@
                 :double-quote
                 :ws*)
 
-     :number (sequence :ws* :integer :fraction :exponent :ws*)
-     :integer (choice
-                (sequence :dash :onenine :d*)
-                (sequence :dash :d)
-                (sequence :onenine :d*)
-                :d)
-     :fraction (choice (sequence "." :d+) "")
-     :exponent (choice (sequence (set "eE") :sign :d+) "")
+     :number (sequence :ws* (any "-") :integer (any :fraction) (any :exponent) :ws*)
+     :integer (choice (sequence :onenine :d*) "0")
+     :fraction (sequence "." :onenine :d*)
+     :exponent (sequence (set "eE") (any :sign) :onenine :d*)
      :onenine (range "19")
-     :dash "-"
-     :sign (choice (set "+-") "")
+     :sign (set "+-")
 
      :begin-array (sequence :ws* "[" :ws*)
      :begin-object (sequence :ws* "{" :ws*)
