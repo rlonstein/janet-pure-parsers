@@ -91,7 +91,10 @@
 
      :main (sequence :json -1)}))
 
-(defn parse-json [v]
-  (var p (peg/match json-grammar v))
-  # FIXME- handle errors
-  (get p 0))
+(defn parse [v]
+  (try (let [p (peg/match json-grammar v)]
+         (cond
+           (nil? p) (eprint "Nothing parsed from supplied string")
+           (empty? p) (eprint "Empty parse from supplied string")
+           (p 0)))
+       ([err] (eprintf "Error- Parsing failed: %q" err))))
