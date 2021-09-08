@@ -9,7 +9,10 @@
   lst)
 
 (defn- mk-number [str]
-  (scan-number str))
+  (var n (scan-number str))
+  (when (nil? n)
+    (errorf ("Failed to convert parsed number '%q'" str)))
+  n)
 
 (defn- mk-keyword [& str]
   (map keyword str))
