@@ -84,7 +84,7 @@
      :slash "/"
      :escaped (choice :double-quote :backslash :slash (set  "bfnrt") (sequence "u" (repeat 4 :h)))
 
-     :ascii-printable (range "\x20\x21" "\x23\x7E")   # no double-quote
+     :ascii-printable (range "\x20\x21" "\x23\x7F")   # no double-quote
      :ascii-extended (range "\xA0\xFF")
 
      :boolean (choice :true :false)
