@@ -14,5 +14,5 @@
         (do
           (printf "%q" result)
           (os/exit 0))))
-  ([err] (do (xprintf stderr "%q" err) (os/exit 1))))
+  ([err] (do (eprintf "%q" err) (os/exit 1))))
 
