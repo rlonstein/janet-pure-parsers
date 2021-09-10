@@ -1,4 +1,5 @@
 (defn- mk-boolean [v]
+  #(when (dyn :debug) (eprintf "DEBUG: mk-boolean '%q'" v))
   (cond
     (= v "false") false
     (= v "true") true
@@ -6,15 +7,18 @@
     (errorf "invalid boolean: '%q'" v)))
 
 (defn- mk-array [lst]
+  #(when (dyn :debug) (eprintf "DEBUG: mk-array '%q'" lst))
   lst)
 
 (defn- mk-number [str]
-  (var n (scan-number str))
+  (var n (scan-number (string/trim str)))
+  #(when (dyn :debug) (eprintf "DEBUG: mk-number '%q' --> '%q'" str n))
   (when (nil? n)
     (errorf ("Failed to convert parsed number '%q'" str)))
   n)
 
 (defn- mk-keyword [& str]
+  #(when (dyn :debug) (eprintf "DEBUG: mk-keyword '%q'" str))
   (map keyword str))
 
 (defn- mk-table [lst]
@@ -28,6 +32,7 @@
   accum)
 
 (defn- mk-string [str]
+  #(when (dyn :debug) (eprintf "DEBUG: mk-string '%q'" str))
   str)
 
 (def json-grammar
@@ -50,7 +55,6 @@
      :members (sequence :member (any (sequence :value-separator :member)))
      :element (sequence :ws* :value :ws*)
      :elements (sequence :element (any (sequence :value-separator :element)))
-
      :string (sequence
                 :ws*
                 :double-quote
@@ -59,9 +63,9 @@
                 :ws*)
 
      :number (sequence :ws* (not :illegal-numbers) (any "-") :integer (any :fraction) (any :exponent) :ws*)
-     :illegal-numbers (choice (sequence (any "-") "0" :d))
+     :illegal-numbers (sequence (any "-") "0" :d)
      :integer (choice (sequence :onenine :d*) "0")
-     :fraction (sequence "." :onenine :d*)
+     :fraction (sequence "." (choice :onenine "0") :d*)
      :exponent (sequence (set "eE") (any :sign) :onenine :d*)
      :onenine (range "19")
      :sign (set "+-")
