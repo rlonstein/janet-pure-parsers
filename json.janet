@@ -58,7 +58,8 @@
                 :double-quote
                 :ws*)
 
-     :number (sequence :ws* (any "-") :integer (any :fraction) (any :exponent) :ws*)
+     :number (sequence :ws* (not :illegal-numbers) (any "-") :integer (any :fraction) (any :exponent) :ws*)
+     :illegal-numbers (choice (sequence (any "-") "0" :d))
      :integer (choice (sequence :onenine :d*) "0")
      :fraction (sequence "." :onenine :d*)
      :exponent (sequence (set "eE") (any :sign) :onenine :d*)
