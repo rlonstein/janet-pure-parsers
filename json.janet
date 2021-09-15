@@ -99,10 +99,40 @@
 
      :main (sequence :json -1)}))
 
-(defn parse [v]
+(defn parse
+  `Parse a JSON string into a Janet data structure`
+  [v]
   (try (let [p (peg/match json-grammar v)]
          (cond
            (nil? p) (eprint "Nothing parsed from supplied string")
            (empty? p) (eprint "Empty parse from supplied string")
            (p 0)))
        ([err] (eprintf "Error- Parsing failed: %q" err))))
+
+(defn encode
+  `Encode a Janet data structure into a JSON string`
+  [v &opt acc]
+
+  (defn- list-helper [l]
+    (encode l @""))
+
+  (defn- pair-helper [p]
+    (let [buf @""]
+      (encode (p 0) buf)
+      (buffer/push-string buf ":")
+      (encode (p 1) buf)
+      buf))
+
+  (default acc @"")
+  (buffer/push-string acc
+   (case (type v)
+     :nil       "null"
+     :boolean   (if (true? v) "true" "false")
+     :number    (string/format "%q" v)
+     :string    (string/format `"%s"` v)
+     :keyword   (string/format `"%s"` (string/slice (string/format "%q" v) 1))
+     :array     (string/format "[%s]" (string/join (map list-helper v) ","))
+     :tuple     (string/format "[%s]" (string/join (map list-helper v) ","))
+     :table     (string/format "{%s}" (string/join (map pair-helper (pairs v)) ","))
+     :struct    (string/format "{%s}" (string/join (map pair-helper (pairs v)) ","))
+     (errorf "Can not encode type %q value %q" (type v) v))))
