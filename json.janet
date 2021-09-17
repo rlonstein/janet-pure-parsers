@@ -110,8 +110,11 @@
        ([err] (eprintf "Error- Parsing failed: %q" err))))
 
 (defn encode
-  `Encode a Janet data structure into a JSON string`
+  `Encode a Janet data structure into a compact JSON string`
   [v &opt acc]
+
+  (def CURLY_BRACES ["{" "}"])
+  (def SQUARE_BRACES ["[" "]"])
 
   (defn- list-helper [l]
     (encode l @""))
@@ -123,16 +126,30 @@
       (encode (p 1) buf)
       buf))
 
+  (defn- wrap-and-map!
+    [buf wrapper func seq]
+    (-> buf
+        (buffer/push-string (wrapper 0))
+        (buffer/push-string (string/join (map func seq) ","))
+        (buffer/push-string (wrapper 1))))
+
   (default acc @"")
-  (buffer/push-string acc
-   (case (type v)
-     :nil       "null"
-     :boolean   (if (true? v) "true" "false")
-     :number    (string/format "%q" v)
-     :string    (string/format `"%s"` v)
-     :keyword   (string/format `"%s"` (string/slice (string/format "%q" v) 1))
-     :array     (string/format "[%s]" (string/join (map list-helper v) ","))
-     :tuple     (string/format "[%s]" (string/join (map list-helper v) ","))
-     :table     (string/format "{%s}" (string/join (map pair-helper (pairs v)) ","))
-     :struct    (string/format "{%s}" (string/join (map pair-helper (pairs v)) ","))
-     (errorf "Can not encode type %q value %q" (type v) v))))
+  (case (type v)
+    :nil     (buffer/push-string acc "null")
+    :boolean (buffer/push-string acc (if (true? v) "true" "false"))
+    # FIXME: janet IEEE 754 numbers are richer than JSON's valid
+    # representations (what to do with NaN, Inf, etc.)
+    :number  (buffer/format acc `"%q"` v)
+    :string  (buffer/format acc `"%s"` v)
+    # QQ: reverse of the parser's coercion of string key to keyword
+    # but are there unintended consequences? works for me...
+    :keyword (-> acc
+                 (buffer/push-string "\"")
+                 (buffer/push (buffer/slice (buffer/format @"" "%q" v) 1))
+                 (buffer/push "\""))
+    :array  (wrap-and-map! acc SQUARE_BRACES list-helper v)
+    :tuple  (wrap-and-map! acc SQUARE_BRACES list-helper v)
+    :table  (wrap-and-map! acc CURLY_BRACES  pair-helper (pairs v))
+    :struct (wrap-and-map! acc CURLY_BRACES  pair-helper (pairs v))
+    (errorf "Can not encode type %q value %q" (type v) v))
+  acc)
